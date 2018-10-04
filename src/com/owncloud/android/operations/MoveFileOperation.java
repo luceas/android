@@ -27,7 +27,6 @@ import com.owncloud.android.lib.common.operations.RemoteOperationResult;
 import com.owncloud.android.lib.common.operations.RemoteOperationResult.ResultCode;
 import com.owncloud.android.lib.resources.files.MoveRemoteFileOperation;
 import com.owncloud.android.operations.common.SyncOperation;
-import com.owncloud.android.services.observer.FileObserverService;
 import com.owncloud.android.utils.FileStorageUtils;
 
 import android.accounts.Account;
@@ -102,7 +101,7 @@ public class MoveFileOperation extends SyncOperation {
             );
                 // OCFile.AvailableOfflineStatus.AVAILABLE_OFFLINE_PARENT requires no action
             if (isAvailableOffline) {
-                stopObservation();
+//                stopObservation();
             }
 
             getStorageManager().moveLocalFile(mFile, targetPath, mTargetParentPath);
@@ -117,12 +116,12 @@ public class MoveFileOperation extends SyncOperation {
             } else if (updatedAvOffStatus == OCFile.AvailableOfflineStatus.AVAILABLE_OFFLINE_PARENT) {
                 // enforce ancestor to rescan subfolders for immediate observation
                 OCFile ancestor = getStorageManager().getAvailableOfflineAncestorOf(updatedFile);
-                FileObserverService.observeFile(
-                    MainApp.getAppContext(),
-                    ancestor,
-                    getStorageManager().getAccount(),
-                    true
-                );
+//                FileObserverService.observeFile(
+//                    MainApp.getAppContext(),
+//                    ancestor,
+//                    getStorageManager().getAccount(),
+//                    true
+//                );
             }
 
         }
@@ -131,14 +130,14 @@ public class MoveFileOperation extends SyncOperation {
         return result;
     }
 
-    private void stopObservation() {
-        FileObserverService.observeFile(
-            MainApp.getAppContext(),
-            mFile,
-            getStorageManager().getAccount(),
-            false
-        );
-    }
+//    private void stopObservation() {
+//        FileObserverService.observeFile(
+//            MainApp.getAppContext(),
+//            mFile,
+//            getStorageManager().getAccount(),
+//            false
+//        );
+//    }
 
     private void resumeObservation(String targetPath) {
         OCFile updatedFile = new OCFile(targetPath);
@@ -150,12 +149,12 @@ public class MoveFileOperation extends SyncOperation {
                 updatedFile
             )
         );
-        FileObserverService.observeFile(
-            MainApp.getAppContext(),
-            updatedFile,
-            getStorageManager().getAccount(),
-            true
-        );
+//        FileObserverService.observeFile(
+//            MainApp.getAppContext(),
+//            updatedFile,
+//            getStorageManager().getAccount(),
+//            true
+//        );
     }
 
 
