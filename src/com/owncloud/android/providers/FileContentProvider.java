@@ -73,7 +73,6 @@ public class FileContentProvider extends ContentProvider {
     private static final int UPLOADS = 6;
     private static final int CAMERA_UPLOADS_SYNC = 7;
     private static final int QUOTAS = 8;
-    private static final int AVAILABLE_OFFLINE_SYNC = 9;
 
     private static final String TAG = FileContentProvider.class.getSimpleName();
 
@@ -309,9 +308,6 @@ public class FileContentProvider extends ContentProvider {
             case QUOTAS:
                 count = db.delete(ProviderTableMeta.USER_QUOTAS_TABLE_NAME, where, whereArgs);
                 break;
-            case AVAILABLE_OFFLINE_SYNC:
-                count = db.delete(ProviderTableMeta.AVAILABLE_OFFLINE_SYNC_TABLE_NAME, where, whereArgs);
-                break;
             default:
                 throw new IllegalArgumentException("Unknown uri: " + uri.toString());
         }
@@ -447,22 +443,6 @@ public class FileContentProvider extends ContentProvider {
                 }
                 return insertedQuotaUri;
 
-            case AVAILABLE_OFFLINE_SYNC:
-                Uri insertedAvailableOfflineSyncUri;
-                long availableOfflineSyncId = db.insert(
-                        ProviderTableMeta.AVAILABLE_OFFLINE_SYNC_TABLE_NAME,
-                        null,
-                        values
-                );
-                if (availableOfflineSyncId > 0) {
-                    insertedAvailableOfflineSyncUri =
-                            ContentUris.withAppendedId(ProviderTableMeta.CONTENT_URI_AVAILABLE_OFFLINE_SYNC,
-                                    availableOfflineSyncId);
-                } else {
-                    throw new SQLException("ERROR " + uri);
-                }
-                return insertedAvailableOfflineSyncUri;
-
             default:
                 throw new IllegalArgumentException("Unknown uri id: " + uri);
         }
@@ -513,8 +493,6 @@ public class FileContentProvider extends ContentProvider {
         mUriMatcher.addURI(authority, "cameraUploadsSync/#", CAMERA_UPLOADS_SYNC);
         mUriMatcher.addURI(authority, "quotas/", QUOTAS);
         mUriMatcher.addURI(authority, "quotas/#", QUOTAS);
-        mUriMatcher.addURI(authority, "availableOfflineSync/", AVAILABLE_OFFLINE_SYNC);
-        mUriMatcher.addURI(authority, "availableOfflineSync/#", AVAILABLE_OFFLINE_SYNC);
 
         return true;
     }
@@ -613,13 +591,6 @@ public class FileContentProvider extends ContentProvider {
                             + uri.getPathSegments().get(1));
                 }
                 break;
-            case AVAILABLE_OFFLINE_SYNC:
-                sqlQuery.setTables(ProviderTableMeta.AVAILABLE_OFFLINE_SYNC_TABLE_NAME);
-                if (uri.getPathSegments().size() > 1) {
-                    sqlQuery.appendWhere(ProviderTableMeta._ID + "="
-                            + uri.getPathSegments().get(1));
-                }
-                break;
             default:
                 throw new IllegalArgumentException("Unknown uri id: " + uri);
         }
@@ -638,9 +609,6 @@ public class FileContentProvider extends ContentProvider {
                     break;
                 case CAMERA_UPLOADS_SYNC:
                     order = ProviderTableMeta.CAMERA_UPLOADS_SYNC_DEFAULT_SORT_ORDER;
-                    break;
-                case AVAILABLE_OFFLINE_SYNC:
-                    order = ProviderTableMeta.AVAILABLE_OFFLINE_SYNC_DEFAULT_SORT_ORDER;
                     break;
                 default: // Files
                     order = ProviderTableMeta.FILE_DEFAULT_SORT_ORDER;
@@ -704,10 +672,6 @@ public class FileContentProvider extends ContentProvider {
                 return db.update(
                         ProviderTableMeta.USER_QUOTAS_TABLE_NAME, values, selection, selectionArgs
                 );
-            case AVAILABLE_OFFLINE_SYNC:
-                return db.update(
-                        ProviderTableMeta.AVAILABLE_OFFLINE_SYNC_TABLE_NAME, values, selection, selectionArgs
-                );
             default:
                 return db.update(
                         ProviderTableMeta.FILE_TABLE_NAME, values, selection, selectionArgs
@@ -770,9 +734,6 @@ public class FileContentProvider extends ContentProvider {
 
             // Create camera upload sync table
             createCameraUploadsSyncTable(db);
-
-            // Create available offline sync table
-            createAvailableOfflineSyncTable(db);
         }
 
         @Override
@@ -1089,18 +1050,6 @@ public class FileContentProvider extends ContentProvider {
                 }
             }
 
-            if (oldVersion < 24 && newVersion >= 24) {
-                Log_OC.i("SQL", "Entering in the #24 ADD in onUpgrade");
-                db.beginTransaction();
-                try {
-                    createAvailableOfflineSyncTable(db);
-                    db.setTransactionSuccessful();
-                    upgraded = true;
-                } finally {
-                    db.endTransaction();
-                }
-            }
-
             if (!upgraded) {
                 Log_OC.i("SQL", "OUT of the ADD in onUpgrade; oldVersion == " + oldVersion +
                         ", newVersion == " + newVersion);
@@ -1235,13 +1184,6 @@ public class FileContentProvider extends ContentProvider {
                 + ProviderTableMeta._ID + " INTEGER PRIMARY KEY, "
                 + ProviderTableMeta.PICTURES_LAST_SYNC_TIMESTAMP + " INTEGER,"
                 + ProviderTableMeta.VIDEOS_LAST_SYNC_TIMESTAMP + " INTEGER);"
-        );
-    }
-
-    private void createAvailableOfflineSyncTable(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE " + ProviderTableMeta.AVAILABLE_OFFLINE_SYNC_TABLE_NAME + "("
-                + ProviderTableMeta._ID + " INTEGER PRIMARY KEY, "
-                + ProviderTableMeta.AVAILABLE_OFFLINE_LAST_SYNC_TIMESTAMP + " INTEGER);"
         );
     }
 
