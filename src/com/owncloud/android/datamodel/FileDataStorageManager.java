@@ -3,6 +3,7 @@
  *
  *   @author Bartek Przybylski
  *   @author Christian Schabesberger
+ *
  *   Copyright (C) 2012  Bartek Przybylski
  *   Copyright (C) 2018 ownCloud GmbH.
  *
